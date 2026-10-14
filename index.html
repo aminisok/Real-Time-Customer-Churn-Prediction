@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reminder List</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    form { display: flex; gap: 8px; }
+    input { flex: 1; padding: 8px; }
+    button { padding: 8px 12px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #ddd; }
+    li span { flex: 1; }
+    li.done span { text-decoration: line-through; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Reminder List</h1>
+  <form id="form">
+    <input id="text" placeholder="Add a reminder..." required>
+    <button>Add</button>
+  </form>
+  <ul id="list"></ul>
+
+  <script>
+    const list = document.getElementById('list');
+    let items = JSON.parse(localStorage.getItem('reminders') || '[]');
+
+    function save() { localStorage.setItem('reminders', JSON.stringify(items)); }
+
+    function render() {
+      list.innerHTML = '';
+      items.forEach((item, i) => {
+        const li = document.createElement('li');
+        if (item.done) li.className = 'done';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = item.done;
+        cb.onchange = () => { item.done = cb.checked; save(); render(); };
+        const span = document.createElement('span');
+        span.textContent = item.text;
+        const del = document.createElement('button');
+        del.textContent = '✕';
+        del.onclick = () => { items.splice(i, 1); save(); render(); };
+        li.append(cb, span, del);
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById('form').onsubmit = e => {
+      e.preventDefault();
+      const input = document.getElementById('text');
+      items.push({ text: input.value, done: false });
+      input.value = '';
+      save(); render();
+    };
+
+    render();
+  </script>
+</body>
+</html>
